@@ -1,0 +1,32 @@
+services:
+  mongodb:
+    image: mongo:8.0.10-noble
+    container_name: mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    env_file:
+      - .env.example
+    volumes:
+      - /home/aditya/Dev/Docker/volumes/TMS/data/db:/data/db
+      - /home/aditya/Dev/Docker/volumes/TMS/data/configdb:/data/configdb
+    networks:
+      - mongodb_network
+
+  # Optional: MongoDB Express for web-based admin interface
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mongo-express
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env.example
+    depends_on:
+      - mongodb
+    networks:
+      - mongodb_network
+
+networks:
+  mongodb_network:
+    driver: bridge
