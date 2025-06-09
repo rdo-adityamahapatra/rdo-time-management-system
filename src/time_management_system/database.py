@@ -11,6 +11,8 @@ from pymongo.collection import Collection
 from pymongo.database import Database
 from pymongo.errors import ConnectionFailure, PyMongoError
 
+from .logger import logger
+
 
 class DBClient:
     """
@@ -57,11 +59,11 @@ class DBClient:
 
         try:
             self._connect()
-        except (ConnectionFailure, PyMongoError) as e:
+        except (ConnectionFailure, PyMongoError) as exc:
             # Reset instance if connection fails
             with self._lock:
                 DBClient._instance = None
-            print(f"❌ Error during MongoDB connection: {e}")
+            logger.error(f"Error during MongoDB connection: {exc}")
             raise
 
         self._initialized = True
@@ -96,11 +98,11 @@ class DBClient:
                 raise EnvironmentError("Database name must not be None")
             self._database = self._client[self.database_name]
 
-        except ConnectionFailure as e:
-            print(f"❌ Failed to connect to MongoDB: {e}")
+        except ConnectionFailure as exc:
+            logger.error(f"Failed to connect to MongoDB: {exc}")
             raise
-        except PyMongoError as e:
-            print(f"❌ MongoDB error during connection: {e}")
+        except PyMongoError as exc:
+            logger.error(f"MongoDB error during connection: {exc}")
             raise
 
     def get_collection(self, collection_name: str) -> Collection:
@@ -113,7 +115,7 @@ class DBClient:
         """Close the MongoDB connection."""
         if self._client:
             self._client.close()
-            print("🔌 MongoDB connection closed")
+            logger.info("MongoDB connection closed")
 
     # CREATE operations
     def insert_one(self, collection_name: str, document: Dict[str, Any]) -> str:
@@ -122,8 +124,8 @@ class DBClient:
             collection = self.get_collection(collection_name)
             result = collection.insert_one(document)
             return str(result.inserted_id)
-        except PyMongoError as e:
-            print(f"❌ Error inserting document: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error inserting document: {exc}")
             raise
 
     def insert_many(self, collection_name: str, documents: List[Dict[str, Any]]) -> List[str]:
@@ -132,8 +134,8 @@ class DBClient:
             collection = self.get_collection(collection_name)
             result = collection.insert_many(documents)
             return [str(id) for id in result.inserted_ids]
-        except PyMongoError as e:
-            print(f"❌ Error inserting documents: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error inserting documents: {exc}")
             raise
 
     # READ operations
@@ -145,8 +147,8 @@ class DBClient:
             if result and "_id" in result:
                 result["_id"] = str(result["_id"])
             return result
-        except PyMongoError as e:
-            print(f"❌ Error finding document: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error finding document: {exc}")
             raise
 
     def find_by_id(self, collection_name: str, document_id: str) -> Optional[Dict[str, Any]]:
@@ -157,11 +159,11 @@ class DBClient:
             if result:
                 result["_id"] = str(result["_id"])
             return result
-        except InvalidId as e:
-            print(f"❌ Invalid ObjectId format: {e}")
+        except InvalidId as exc:
+            logger.error(f"Invalid ObjectId format: {exc}")
             raise
-        except PyMongoError as e:
-            print(f"❌ Error finding document by ID: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error finding document by ID: {exc}")
             raise
 
     def find_many(
@@ -188,8 +190,8 @@ class DBClient:
                 results.append(doc)
 
             return results
-        except PyMongoError as e:
-            print(f"❌ Error finding documents: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error finding documents: {exc}")
             raise
 
     def count_documents(self, collection_name: str, filter_dict: Optional[Dict[str, Any]] = None) -> int:
@@ -197,8 +199,8 @@ class DBClient:
         try:
             collection = self.get_collection(collection_name)
             return collection.count_documents(filter_dict or {})
-        except PyMongoError as e:
-            print(f"❌ Error counting documents: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error counting documents: {exc}")
             raise
 
     # UPDATE operations
@@ -215,19 +217,19 @@ class DBClient:
 
             result = collection.update_one(filter_dict, update_dict, upsert=upsert)
             return result.modified_count > 0 or result.upserted_id is not None
-        except PyMongoError as e:
-            print(f"❌ Error updating document: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error updating document: {exc}")
             raise
 
     def update_by_id(self, collection_name: str, document_id: str, update_dict: Dict[str, Any]) -> bool:
         """Update a document by its ObjectId."""
         try:
             return self.update_one(collection_name, {"_id": ObjectId(document_id)}, update_dict)
-        except InvalidId as e:
-            print(f"❌ Invalid ObjectId format: {e}")
+        except InvalidId as exc:
+            logger.error(f"Invalid ObjectId format: {exc}")
             raise
-        except PyMongoError as e:
-            print(f"❌ Error updating document by ID: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error updating document by ID: {exc}")
             raise
 
     def update_many(self, collection_name: str, filter_dict: Dict[str, Any], update_dict: Dict[str, Any]) -> int:
@@ -241,8 +243,8 @@ class DBClient:
 
             result = collection.update_many(filter_dict, update_dict)
             return result.modified_count
-        except PyMongoError as e:
-            print(f"❌ Error updating documents: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error updating documents: {exc}")
             raise
 
     # DELETE operations
@@ -252,19 +254,19 @@ class DBClient:
             collection = self.get_collection(collection_name)
             result = collection.delete_one(filter_dict)
             return result.deleted_count > 0
-        except PyMongoError as e:
-            print(f"❌ Error deleting document: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error deleting document: {exc}")
             raise
 
     def delete_by_id(self, collection_name: str, document_id: str) -> bool:
         """Delete a document by its ObjectId."""
         try:
             return self.delete_one(collection_name, {"_id": ObjectId(document_id)})
-        except InvalidId as e:
-            print(f"❌ Invalid ObjectId format: {e}")
+        except InvalidId as exc:
+            logger.error(f"Invalid ObjectId format: {exc}")
             raise
-        except PyMongoError as e:
-            print(f"❌ Error deleting document by ID: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error deleting document by ID: {exc}")
             raise
 
     def delete_many(self, collection_name: str, filter_dict: Dict[str, Any]) -> int:
@@ -273,8 +275,8 @@ class DBClient:
             collection = self.get_collection(collection_name)
             result = collection.delete_many(filter_dict)
             return result.deleted_count
-        except PyMongoError as e:
-            print(f"❌ Error deleting documents: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error deleting documents: {exc}")
             raise
 
     # Utility methods
@@ -284,8 +286,8 @@ class DBClient:
             collection = self.get_collection(collection_name)
             collection.drop()
             return True
-        except PyMongoError as e:
-            print(f"❌ Error dropping collection: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error dropping collection: {exc}")
             raise
 
     def list_collections(self) -> List[str]:
@@ -294,8 +296,8 @@ class DBClient:
             if self._database is None:
                 raise RuntimeError("Database connection not established")
             return self._database.list_collection_names()
-        except PyMongoError as e:
-            print(f"❌ Error listing collections: {e}")
+        except PyMongoError as exc:
+            logger.error(f"Error listing collections: {exc}")
             raise
 
 
@@ -312,34 +314,34 @@ if __name__ == "__main__":
         user_data = {"name": "John Doe", "email": "john@example.com", "age": 30}
 
         user_id = db.insert_one(collection_name, user_data)
-        print(f"✅ Inserted user with ID: {user_id}")
+        logger.info(f"Inserted user with ID: {user_id}")
 
         # READ
         user = db.find_by_id(collection_name, user_id)
-        print(f"📖 Found user: {user}")
+        logger.info(f"Found user: {user}")
 
         all_users = db.find_many(collection_name)
-        print(f"📚 All users: {len(all_users)} found")
+        logger.info(f"All users: {len(all_users)} found")
 
         # UPDATE
         updated = db.update_by_id(collection_name, user_id, {"age": 31})
-        print(f"✏️ Updated user: {updated}")
+        logger.info(f"Updated user: {updated}")
 
         # DELETE
         deleted = db.delete_by_id(collection_name, user_id)
-        print(f"🗑️ Deleted user: {deleted}")
+        logger.info(f"Deleted user: {deleted}")
 
     except EnvironmentError as exc:
-        print(f"❌ Environment configuration error: {exc}")
+        logger.error(f"Environment configuration error: {exc}")
     except (ConnectionFailure, PyMongoError) as exc:
-        print(f"❌ Database operation failed: {exc}")
+        logger.error(f"Database operation failed: {exc}")
     except InvalidId as exc:
-        print(f"❌ Invalid ID format: {exc}")
+        logger.error(f"Invalid ID format: {exc}")
 
     finally:
         try:
             # Clean up
             db = DBClient()
             db.close_connection()
-        except:
-            pass
+        except (ConnectionFailure, PyMongoError) as exc:
+            logger.error(f"Error closing MongoDB connection: {exc}")
