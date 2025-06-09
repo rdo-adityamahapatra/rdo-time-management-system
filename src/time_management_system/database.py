@@ -1,14 +1,15 @@
 import os
 import threading
 from typing import Any, Dict, List, Optional
+from urllib.parse import quote_plus
 
 from bson import ObjectId
-from bson.errors import InvalidId as BsonInvalidId
+from bson.errors import InvalidId
 from dotenv import load_dotenv
 from pymongo import MongoClient
 from pymongo.collection import Collection
 from pymongo.database import Database
-from pymongo.errors import ConnectionFailure, InvalidId, PyMongoError
+from pymongo.errors import ConnectionFailure, PyMongoError
 
 
 class DBClient:
@@ -23,24 +24,29 @@ class DBClient:
     def __new__(cls):
         if cls._instance is None:
             with cls._lock:
-                if cls._instance is None:
+                if cls._instance is None:  # Double-checked locking for multi-threading safety
                     cls._instance = super(DBClient, cls).__new__(cls)
                     cls._instance._initialized = False
         return cls._instance
 
     def __init__(self):
-        if self._initialized:
+        if hasattr(self, "_initialized") and self._initialized:
             return
 
         # Load environment variables from .env file
         load_dotenv()
 
-        # Database configuration - no defaults, must be set in .env
         self.host = os.getenv("MONGO_HOST")
-        self.port = int(os.getenv("MONGO_PORT")) if os.getenv("MONGO_PORT") else None
         self.username = os.getenv("MONGO_INITDB_ROOT_USERNAME")
         self.password = os.getenv("MONGO_INITDB_ROOT_PASSWORD")
         self.database_name = os.getenv("MONGO_INITDB_DATABASE")
+
+        # Handle port conversion with proper error handling
+        port_str = os.getenv("MONGO_PORT")
+        try:
+            self.port = int(port_str) if port_str and port_str.strip() else None
+        except ValueError:
+            raise EnvironmentError(f"Invalid MONGO_PORT value: '{port_str}'. Must be a valid integer.")
 
         # Validate required environment variables
         self._validate_env_vars()
@@ -48,7 +54,16 @@ class DBClient:
         # Initialize connection
         self._client: Optional[MongoClient] = None
         self._database: Optional[Database] = None
-        self._connect()
+
+        try:
+            self._connect()
+        except (ConnectionFailure, PyMongoError) as e:
+            # Reset instance if connection fails
+            with self._lock:
+                DBClient._instance = None
+            print(f"❌ Error during MongoDB connection: {e}")
+            raise
+
         self._initialized = True
 
     def _validate_env_vars(self):
@@ -61,7 +76,7 @@ class DBClient:
             "MONGO_INITDB_DATABASE": self.database_name,
         }
 
-        missing_vars = [var for var, value in required_vars.items() if value is None]
+        missing_vars = [var for var, value in required_vars.items() if value is None or value == ""]
 
         if missing_vars:
             raise EnvironmentError(
@@ -71,13 +86,15 @@ class DBClient:
     def _connect(self):
         """Establish connection to MongoDB."""
         try:
-            connection_string = f"mongodb://{self.username}:{self.password}@{self.host}:{self.port}/"
-            self._client = MongoClient(connection_string)
-            self._database = self._client[self.database_name]
+            # URL-encode username and password to handle special characters
+            encoded_username = quote_plus(self.username) if self.username is not None else ""
+            encoded_password = quote_plus(self.password) if self.password is not None else ""
 
-            # Test connection
-            self._client.admin.command("ping")
-            print(f"✅ Connected to MongoDB at {self.host}:{self.port}")
+            connection_string = f"mongodb://{encoded_username}:{encoded_password}@{self.host}:{self.port}/"
+            self._client = MongoClient(connection_string)
+            if self.database_name is None:
+                raise EnvironmentError("Database name must not be None")
+            self._database = self._client[self.database_name]
 
         except ConnectionFailure as e:
             print(f"❌ Failed to connect to MongoDB: {e}")
@@ -88,7 +105,7 @@ class DBClient:
 
     def get_collection(self, collection_name: str) -> Collection:
         """Get a collection from the database."""
-        if not self._database:
+        if self._database is None:
             raise RuntimeError("Database connection not established")
         return self._database[collection_name]
 
@@ -120,7 +137,7 @@ class DBClient:
             raise
 
     # READ operations
-    def find_one(self, collection_name: str, filter_dict: Dict[str, Any] = None) -> Optional[Dict[str, Any]]:
+    def find_one(self, collection_name: str, filter_dict: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
         """Find a single document in the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -140,7 +157,7 @@ class DBClient:
             if result:
                 result["_id"] = str(result["_id"])
             return result
-        except (BsonInvalidId, InvalidId) as e:
+        except InvalidId as e:
             print(f"❌ Invalid ObjectId format: {e}")
             raise
         except PyMongoError as e:
@@ -150,7 +167,7 @@ class DBClient:
     def find_many(
         self,
         collection_name: str,
-        filter_dict: Dict[str, Any] = None,
+        filter_dict: Optional[Dict[str, Any]] = None,
         limit: Optional[int] = None,
         skip: Optional[int] = None,
     ) -> List[Dict[str, Any]]:
@@ -175,7 +192,7 @@ class DBClient:
             print(f"❌ Error finding documents: {e}")
             raise
 
-    def count_documents(self, collection_name: str, filter_dict: Dict[str, Any] = None) -> int:
+    def count_documents(self, collection_name: str, filter_dict: Optional[Dict[str, Any]] = None) -> int:
         """Count documents in the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -206,7 +223,7 @@ class DBClient:
         """Update a document by its ObjectId."""
         try:
             return self.update_one(collection_name, {"_id": ObjectId(document_id)}, update_dict)
-        except (BsonInvalidId, InvalidId) as e:
+        except InvalidId as e:
             print(f"❌ Invalid ObjectId format: {e}")
             raise
         except PyMongoError as e:
@@ -243,7 +260,7 @@ class DBClient:
         """Delete a document by its ObjectId."""
         try:
             return self.delete_one(collection_name, {"_id": ObjectId(document_id)})
-        except (BsonInvalidId, InvalidId) as e:
+        except InvalidId as e:
             print(f"❌ Invalid ObjectId format: {e}")
             raise
         except PyMongoError as e:
@@ -274,6 +291,8 @@ class DBClient:
     def list_collections(self) -> List[str]:
         """List all collections in the database."""
         try:
+            if self._database is None:
+                raise RuntimeError("Database connection not established")
             return self._database.list_collection_names()
         except PyMongoError as e:
             print(f"❌ Error listing collections: {e}")
@@ -314,7 +333,7 @@ if __name__ == "__main__":
         print(f"❌ Environment configuration error: {exc}")
     except (ConnectionFailure, PyMongoError) as exc:
         print(f"❌ Database operation failed: {exc}")
-    except (BsonInvalidId, InvalidId) as exc:
+    except InvalidId as exc:
         print(f"❌ Invalid ID format: {exc}")
 
     finally:
