@@ -50,10 +50,8 @@ class DBClient:
         except ValueError:
             raise EnvironmentError(f"Invalid MONGO_PORT value: '{port_str}'. Must be a valid integer.")
 
-        # Validate required environment variables
         self._validate_env_vars()
 
-        # Initialize connection
         self._client: Optional[MongoClient] = None
         self._database: Optional[Database] = None
 
