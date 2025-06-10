@@ -26,7 +26,7 @@ class DBClient:
     def __new__(cls):
         if cls._instance is None:
             with cls._lock:
-                if cls._instance is None:  # Double-checked locking for multi-threading safety
+                if cls._instance is None:  # Double-check locking for multi-threading safety
                     cls._instance = super(DBClient, cls).__new__(cls)
                     cls._instance._initialized = False
         return cls._instance
@@ -186,7 +186,6 @@ class DBClient:
                 if "_id" in doc:
                     doc["_id"] = str(doc["_id"])
                 results.append(doc)
-
             return results
         except PyMongoError as exc:
             logger.error(f"Error finding documents: {exc}")
