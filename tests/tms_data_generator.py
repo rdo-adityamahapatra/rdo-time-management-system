@@ -1,7 +1,6 @@
 """Generate and seed MongoDB with dummy user and time log data using Faker."""
 
 from datetime import date, timedelta
-from typing import List
 
 from faker import Faker
 from pydantic import ValidationError
@@ -50,7 +49,7 @@ class TMSDataGenerator:
         self.logger = get_logger(self.__class__.__name__)
         self.db = DBClient()
 
-    def generate_users(self) -> List[dict]:
+    def generate_users(self) -> list[dict]:
         """Generate a list of user dictionaries with realistic fake data."""
         users = []
         for user_index in range(1, 502):
@@ -65,7 +64,7 @@ class TMSDataGenerator:
             users.append(user)
         return users
 
-    def generate_timelogs(self, users: List[dict]) -> List[dict]:
+    def generate_timelogs(self, users: list[dict]) -> list[dict]:
         """Generate a list of time log dictionaries for each user with realistic fake data."""
         timelogs = []
         for user in users:
@@ -92,7 +91,7 @@ class TMSDataGenerator:
                 timelogs.append(timelog)
         return timelogs
 
-    def seed_users(self, user_rows: List[dict]) -> None:
+    def seed_users(self, user_rows: list[dict]) -> None:
         """Insert users into the database, ensuring uniqueness and validation."""
         for user_row in user_rows:
             try:
@@ -109,7 +108,7 @@ class TMSDataGenerator:
             except KeyError as key_exc:
                 self.logger.error(f"Missing field {key_exc} in user row: {user_row}")
 
-    def seed_timelogs(self, timelog_rows: List[dict]) -> None:
+    def seed_timelogs(self, timelog_rows: list[dict]) -> None:
         """Insert time logs into the database, ensuring validation."""
         for timelog_row in timelog_rows:
             try:

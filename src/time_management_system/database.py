@@ -3,7 +3,7 @@
 import os
 import threading
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Optional
 from urllib.parse import quote_plus
 
 from bson import ObjectId
@@ -36,7 +36,7 @@ class DBClient:
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:  # Double-check locking for multi-threading safety
-                    cls._instance = super(DBClient, cls).__new__(cls)
+                    cls._instance = super().__new__(cls)
                     cls._instance._initialized = False
         return cls._instance
 
@@ -58,7 +58,7 @@ class DBClient:
         try:
             self.port = int(port_str) if port_str and port_str.strip() else None
         except ValueError:
-            raise EnvironmentError(f"Invalid MONGO_PORT value: '{port_str}'. Must be a valid integer.")
+            raise OSError(f"Invalid MONGO_PORT value: '{port_str}'. Must be a valid integer.")
 
         self._validate_env_vars()
 
@@ -89,7 +89,7 @@ class DBClient:
         missing_vars = [var for var, value in required_vars.items() if value is None or value == ""]
 
         if missing_vars:
-            raise EnvironmentError(
+            raise OSError(
                 f"Missing required environment variables: {', '.join(missing_vars)}. " "Please check your .env file."
             )
 
@@ -103,7 +103,7 @@ class DBClient:
             connection_string = f"mongodb://{encoded_username}:{encoded_password}@{self.host}:{self.port}/"
             self._client = MongoClient(connection_string)
             if self.database_name is None:
-                raise EnvironmentError("Database name must not be None")
+                raise OSError("Database name must not be None")
             self._database = self._client[self.database_name]
 
         except ConnectionFailure as exc:
@@ -126,7 +126,7 @@ class DBClient:
             logger.info("MongoDB connection closed")
 
     # CREATE operations
-    def insert_one(self, collection_name: str, document: Dict[str, Any]) -> str:
+    def insert_one(self, collection_name: str, document: dict[str, Any]) -> str:
         """Insert a single document into the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -136,7 +136,7 @@ class DBClient:
             logger.error(f"Error inserting document: {exc}")
             raise
 
-    def insert_many(self, collection_name: str, documents: List[Dict[str, Any]]) -> List[str]:
+    def insert_many(self, collection_name: str, documents: list[dict[str, Any]]) -> list[str]:
         """Insert multiple documents into the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -147,7 +147,7 @@ class DBClient:
             raise
 
     # READ operations
-    def find_one(self, collection_name: str, filter_dict: Optional[Dict[str, Any]] = None) -> Optional[Dict[str, Any]]:
+    def find_one(self, collection_name: str, filter_dict: Optional[dict[str, Any]] = None) -> Optional[dict[str, Any]]:
         """Find a single document in the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -159,7 +159,7 @@ class DBClient:
             logger.error(f"Error finding document: {exc}")
             raise
 
-    def find_by_id(self, collection_name: str, document_id: str) -> Optional[Dict[str, Any]]:
+    def find_by_id(self, collection_name: str, document_id: str) -> Optional[dict[str, Any]]:
         """Find a document by its ObjectId."""
         try:
             collection = self.get_collection(collection_name)
@@ -177,10 +177,10 @@ class DBClient:
     def find_many(
         self,
         collection_name: str,
-        filter_dict: Optional[Dict[str, Any]] = None,
+        filter_dict: Optional[dict[str, Any]] = None,
         limit: Optional[int] = None,
         skip: Optional[int] = None,
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """Find multiple documents in the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -201,7 +201,7 @@ class DBClient:
             logger.error(f"Error finding documents: {exc}")
             raise
 
-    def count_documents(self, collection_name: str, filter_dict: Optional[Dict[str, Any]] = None) -> int:
+    def count_documents(self, collection_name: str, filter_dict: Optional[dict[str, Any]] = None) -> int:
         """Count documents in the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -212,7 +212,7 @@ class DBClient:
 
     # UPDATE operations
     def update_one(
-        self, collection_name: str, filter_dict: Dict[str, Any], update_dict: Dict[str, Any], upsert: bool = False
+        self, collection_name: str, filter_dict: dict[str, Any], update_dict: dict[str, Any], upsert: bool = False
     ) -> bool:
         """Update a single document in the collection."""
         try:
@@ -228,7 +228,7 @@ class DBClient:
             logger.error(f"Error updating document: {exc}")
             raise
 
-    def update_by_id(self, collection_name: str, document_id: str, update_dict: Dict[str, Any]) -> bool:
+    def update_by_id(self, collection_name: str, document_id: str, update_dict: dict[str, Any]) -> bool:
         """Update a document by its ObjectId."""
         try:
             return self.update_one(collection_name, {"_id": ObjectId(document_id)}, update_dict)
@@ -239,7 +239,7 @@ class DBClient:
             logger.error(f"Error updating document by ID: {exc}")
             raise
 
-    def update_many(self, collection_name: str, filter_dict: Dict[str, Any], update_dict: Dict[str, Any]) -> int:
+    def update_many(self, collection_name: str, filter_dict: dict[str, Any], update_dict: dict[str, Any]) -> int:
         """Update multiple documents in the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -255,7 +255,7 @@ class DBClient:
             raise
 
     # DELETE operations
-    def delete_one(self, collection_name: str, filter_dict: Dict[str, Any]) -> bool:
+    def delete_one(self, collection_name: str, filter_dict: dict[str, Any]) -> bool:
         """Delete a single document from the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -276,7 +276,7 @@ class DBClient:
             logger.error(f"Error deleting document by ID: {exc}")
             raise
 
-    def delete_many(self, collection_name: str, filter_dict: Dict[str, Any]) -> int:
+    def delete_many(self, collection_name: str, filter_dict: dict[str, Any]) -> int:
         """Delete multiple documents from the collection."""
         try:
             collection = self.get_collection(collection_name)
@@ -297,7 +297,7 @@ class DBClient:
             logger.error(f"Error dropping collection: {exc}")
             raise
 
-    def list_collections(self) -> List[str]:
+    def list_collections(self) -> list[str]:
         """List all collections in the database."""
         try:
             if self._database is None:
@@ -338,7 +338,7 @@ if __name__ == "__main__":
         deleted = db.delete_by_id(collection_name, user_id)
         logger.info(f"Deleted user: {deleted}")
 
-    except EnvironmentError as exc:
+    except OSError as exc:
         logger.error(f"Environment configuration error: {exc}")
     except (ConnectionFailure, PyMongoError) as exc:
         logger.error(f"Database operation failed: {exc}")
