@@ -7,7 +7,7 @@ APP_NAME = "TMS"
 # Configure logging only once, when this module is imported
 handler = logging.StreamHandler(sys.stdout)
 formatter = logging.Formatter(
-    "[%(asctime)s] %(levelname)s [%(name)s]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+    "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)d]: %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
 )
 handler.setFormatter(formatter)
 
