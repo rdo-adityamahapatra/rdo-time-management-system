@@ -3,7 +3,7 @@
 repos:
   # General hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
         args: [--markdown-linebreak-ext=md]
@@ -23,22 +23,21 @@ repos:
 
   # Python code formatting
   - repo: https://github.com/psf/black
-    rev: 23.11.0
+    rev: 25.1.0
     hooks:
       - id: black
-        language_version: python3
         args: [--line-length=120]
 
   # Python import sorting
   - repo: https://github.com/pycqa/isort
-    rev: 5.12.0
+    rev: 6.0.1
     hooks:
       - id: isort
         args: [--profile=black, --line-length=120]
 
   # Python linting
   - repo: https://github.com/pycqa/flake8
-    rev: 6.1.0
+    rev: 7.2.0
     hooks:
       - id: flake8
         args: ["--max-line-length=120", "--extend-ignore=E203,W503"]
@@ -49,28 +48,28 @@ repos:
 
   # Python type checking
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.7.1
+    rev: v1.16.0
     hooks:
       - id: mypy
         args: [--ignore-missing-imports, --install-types, --non-interactive]
 
   # Security linting
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
+    rev: 1.8.3
     hooks:
       - id: bandit
         args: [-r, src]
         exclude: tests/
   # Dockerfile linting
   - repo: https://github.com/hadolint/hadolint
-    rev: v2.12.0
+    rev: v2.13.1-beta
     hooks:
       - id: hadolint-docker
         args: [--ignore, DL3008, --ignore, DL3009]
 
   # YAML formatting
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.1.0
+    rev: v4.0.0-alpha.8
     hooks:
       - id: prettier
         types_or: [yaml, markdown]
@@ -85,10 +84,17 @@ repos:
 
   # Commit message formatting
   - repo: https://github.com/commitizen-tools/commitizen
-    rev: v3.13.0
+    rev: v4.8.3
     hooks:
       - id: commitizen
         stages: [commit-msg]
+
+  # Python syntax upgrade
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v3.20.0
+    hooks:
+      - id: pyupgrade
+        args: [--py39-plus]
 
 # Configuration for specific hooks
 default_language_version:
