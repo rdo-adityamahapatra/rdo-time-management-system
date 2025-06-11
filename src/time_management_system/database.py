@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import threading
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus
@@ -11,8 +12,9 @@ from pymongo.collection import Collection
 from pymongo.database import Database
 from pymongo.errors import ConnectionFailure, PyMongoError
 
-from .logger import logger
+from time_management_system.logger import get_logger
 
+logger = get_logger(Path(__file__).stem)
 
 class DBClient:
     """
@@ -32,7 +34,7 @@ class DBClient:
         return cls._instance
 
     def __init__(self):
-        if hasattr(self, "_initialized") and self._initialized:
+        if self._initialized:
             return
 
         # Load environment variables from .env file
