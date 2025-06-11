@@ -6,14 +6,16 @@ services:
     ports:
       - "27017:27017"
     env_file:
-      - .env.example
+      - .env
     volumes:
       - /home/aditya/Dev/Docker/volumes/TMS/data/db:/data/db
       - /home/aditya/Dev/Docker/volumes/TMS/data/configdb:/data/configdb
+      - /etc/localtime:/etc/localtime:ro
     networks:
       - mongodb_network
 
   # Optional: MongoDB Express for web-based admin interface
+  # Using the latest version is fine as this is the web interface, not the actual database.
   mongo-express:
     image: mongo-express:latest
     container_name: mongo-express
@@ -21,7 +23,9 @@ services:
     ports:
       - "8081:8081"
     env_file:
-      - .env.example
+      - .env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     depends_on:
       - mongodb
     networks:
