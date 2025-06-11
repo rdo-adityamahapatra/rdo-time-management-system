@@ -1,6 +1,4 @@
-"""
-Generate and seed MongoDB with dummy user and time log data.
-"""
+"""Generate and seed MongoDB with dummy user and time log data using Faker."""
 
 from datetime import date, timedelta
 from typing import List
@@ -15,18 +13,39 @@ from time_management_system.schemas import TimeLogModel, UserModel
 
 
 class TMSDataGenerator:
-    """
-    Class to generate and seed MongoDB with dummy user and time log data using Faker.
-    """
+    """Generate and seed MongoDB with dummy user and time log data using Faker."""
+
     TIMELOGS_PER_USER = 10
     DEPARTMENTS = [
-        "Compositing", "Lighting", "Modeling", "Rigging", "Animation", "FX", "Matte Painting", "Layout",
-        "Matchmove", "Pipeline", "Editorial", "Production", "IT", "Prodtech", "Asset Management", "Lookdev",
-        "Groom", "Texturing", "Environments", "Rendering", "Color Grading", "Art Department", "Previs", "Story"
+        "Compositing",
+        "Lighting",
+        "Modeling",
+        "Rigging",
+        "Animation",
+        "FX",
+        "Matte Painting",
+        "Layout",
+        "Matchmove",
+        "Pipeline",
+        "Editorial",
+        "Production",
+        "IT",
+        "Prodtech",
+        "Asset Management",
+        "Lookdev",
+        "Groom",
+        "Texturing",
+        "Environments",
+        "Rendering",
+        "Color Grading",
+        "Art Department",
+        "Previs",
+        "Story",
     ]
     SITES = ["Hyderabad", "London", "Sydney"]
 
     def __init__(self):
+        """Initialize the TMSDataGenerator with Faker, logger, and DBClient."""
         self.fake = Faker()
         self.logger = get_logger(self.__class__.__name__)
         self.db = DBClient()
@@ -128,6 +147,7 @@ class TMSDataGenerator:
 
 
 def main() -> None:
+    """Entry point for running the TMSDataGenerator as a script."""
     seeder = TMSDataGenerator()
     seeder.run()
 

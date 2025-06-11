@@ -1,6 +1,8 @@
+"""Database module for MongoDB CRUD operations and connection management."""
+
 import os
-from pathlib import Path
 import threading
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus
 
@@ -16,9 +18,10 @@ from time_management_system.logger import get_logger
 
 logger = get_logger(Path(__file__).stem)
 
+
 class DBClient:
-    """
-    Singleton class for MongoDB CRUD operations.
+    """Singleton class for MongoDB CRUD operations.
+
     Provides thread-safe access to MongoDB with common CRUD operations.
     """
 
@@ -26,6 +29,10 @@ class DBClient:
     _lock = threading.Lock()
 
     def __new__(cls):
+        """Create or return the singleton instance of DBClient.
+
+        Uses double-checked locking for thread safety.
+        """
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:  # Double-check locking for multi-threading safety
@@ -34,6 +41,7 @@ class DBClient:
         return cls._instance
 
     def __init__(self):
+        """Initialize the DBClient, load environment variables, and connect to MongoDB."""
         if self._initialized:
             return
 
