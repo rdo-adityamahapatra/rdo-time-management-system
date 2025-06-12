@@ -19,7 +19,7 @@ setuptools = "^80.9.0"
 pytest = "^8.4.0"
 pytest-asyncio = "^1.0.0"
 pytest-cov = "^6.2.1"
-black = "^25.1.0"
+ruff = "^0.11.13"
 flake8 = "^7.2.0"
 isort = "^6.0.1"
 mypy = "^1.16.0"
@@ -30,3 +30,12 @@ faker = "^37.4.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"] # Enable Flake8 E, F, W codes and isort I codes
+
+[tool.ruff.format]
+# No specific format options needed if defaults are fine other than line length
