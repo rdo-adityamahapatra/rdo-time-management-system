@@ -3,7 +3,7 @@
 import logging
 import sys
 
-APP_NAME = "TMS"
+APP_NAME = "rdo-tms"
 
 # Configure logging only once, when this module is imported
 handler = logging.StreamHandler(sys.stdout)

@@ -4,7 +4,7 @@
 # Set variables
 DB_NAME="time_management_system"
 COLLECTIONS=("users" "time_logs")
-BACKUP_DIR="/home/aditya/Dev/Python/TMS/backups/$(date +%Y-%m-%d_%H-%M-%S)"
+BACKUP_DIR="/home/aditya/Dev/Python/rdo-time-management-system/backups/$(date +%Y-%m-%d_%H-%M-%S)"
 MONGO_HOST="localhost"
 MONGO_PORT="27017"
 
@@ -19,7 +19,7 @@ for COLLECTION in "${COLLECTIONS[@]}"; do
 done
 
 # Optional: Remove backups older than 7 days
-find /home/aditya/Dev/Python/TMS/backups/ -maxdepth 1 -type d -mtime +7 -exec rm -rf {} +
+find /home/aditya/Dev/Python/rdo-time-management-system/backups/ -maxdepth 1 -type d -mtime +7 -exec rm -rf {} +
 
 # Log backup completion
 echo "MongoDB backup completed at $(date) in $BACKUP_DIR"

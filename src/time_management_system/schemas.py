@@ -1,4 +1,4 @@
-"""Pydantic models and schema validation for the TMS project."""
+"""Pydantic models and schema validation for the rdo-time-management-system project."""
 
 import re
 from datetime import date as dt_date

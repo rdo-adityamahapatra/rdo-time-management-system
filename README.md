@@ -19,7 +19,7 @@ A time management application to track attendance and machine utilization.
 ```bash
 # Clone the repository
 git clone <repo-url>
-cd TMS
+cd rdo-time-management-system
 
 # Start all services
 docker-compose up --build
