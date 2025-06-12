@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "rdo-time-management-system"
+version = "0.1.0"
+description = "Time Management System"
+authors = ["Aditya Pranab Mahapatra <adma@redefine.co>"]
+readme = "README.md"
+packages = [{include = "time_management_system", from = "src"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9"
+python-dotenv = "^1.1.0"
+dnspython = "^2.7.0"
+pymongo = "^4.13.1"
+pydantic = {extras = ["email", "timezone"], version = "^2.11.5"}
+requests = "^2.32.4"
+setuptools = "^80.9.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.0"
+pytest-asyncio = "^1.0.0"
+pytest-cov = "^6.2.1"
+black = "^25.1.0"
+flake8 = "^7.2.0"
+isort = "^6.0.1"
+mypy = "^1.16.0"
+pre-commit = "^4.2.0"
+bandit = "^1.8.3"
+faker = "^37.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
