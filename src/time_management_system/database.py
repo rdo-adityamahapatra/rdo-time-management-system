@@ -101,10 +101,17 @@ class DBClient:
             encoded_password = quote_plus(self.password) if self.password is not None else ""
 
             connection_string = f"mongodb://{encoded_username}:{encoded_password}@{self.host}:{self.port}/"
-            self._client = MongoClient(connection_string)
+            self._client = MongoClient(
+                connection_string,
+                serverSelectionTimeoutMS=5000,  # Existing
+                connectTimeoutMS=5000,  # Added
+                socketTimeoutMS=5000,  # Added
+            )
             if self.database_name is None:
                 raise OSError("Database name must not be None")
             self._database = self._client[self.database_name]
+            # Ping the server to ensure connection and authentication
+            self._client.admin.command("ping")
 
         except ConnectionFailure as exc:
             logger.error(f"Failed to connect to MongoDB: {exc}")
