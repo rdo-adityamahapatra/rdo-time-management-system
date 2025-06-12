@@ -1,3 +1,7 @@
+<!-- Badges -->
+
+![Static Badge](https://img.shields.io/badge/License-Proprietary-red) ![Static Badge](https://img.shields.io/badge/Python-3.9%2B-green?logo=python&logoColor=white) ![Static Badge](https://img.shields.io/badge/Version-0.1.0-blue?logo=git)
+
 # Time Management System
 
 A time management application to track attendance and machine utilization.
