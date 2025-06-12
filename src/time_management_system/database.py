@@ -102,10 +102,7 @@ class DBClient:
 
             connection_string = f"mongodb://{encoded_username}:{encoded_password}@{self.host}:{self.port}/"
             self._client = MongoClient(
-                connection_string,
-                serverSelectionTimeoutMS=5000,  # Existing
-                connectTimeoutMS=5000,  # Added
-                socketTimeoutMS=5000,  # Added
+                connection_string, serverSelectionTimeoutMS=5000, connectTimeoutMS=5000, socketTimeoutMS=5000
             )
             if self.database_name is None:
                 raise OSError("Database name must not be None")
