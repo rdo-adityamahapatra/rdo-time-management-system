@@ -43,6 +43,7 @@ repos:
       - id: bandit
         args: [-r, src]
         exclude: tests/
+
   # Dockerfile linting
   - repo: https://github.com/hadolint/hadolint
     rev: v2.13.1-beta
@@ -57,6 +58,21 @@ repos:
       - id: prettier
         types_or: [yaml, markdown]
         exclude: CHANGELOG.md
+
+  # Security scanning with Trivy (using mxab/pre-commit-trivy)
+  - repo: https://github.com/mxab/pre-commit-trivy.git
+    rev: v0.15.0
+    hooks:
+      - id: trivyconfig-docker
+        name: Trivy scan for configuration files
+        args:
+          - "--exit-code"
+          - "1"
+          - "--severity"
+          - "HIGH,CRITICAL"
+          - "--skip-dirs"
+          - "./tests"
+          - "."
 
   # Python dependency scanning
   - repo: https://github.com/pypa/pip-audit

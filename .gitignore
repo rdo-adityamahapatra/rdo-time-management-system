@@ -143,3 +143,7 @@ dmypy.json
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Pre-commit
+.pre-commit-trivy-cache/
+.pre-commit-config.yaml.bak # pre-commit makes backups
