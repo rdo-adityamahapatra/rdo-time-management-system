@@ -1,6 +1,6 @@
 <!-- Badges -->
 
-![Static Badge](https://img.shields.io/badge/License-Proprietary-red) ![Static Badge](https://img.shields.io/badge/Python-3.9%2B-green?logo=python&logoColor=white) ![Static Badge](https://img.shields.io/badge/Version-0.1.0-blue?logo=git)
+![Static Badge](https://img.shields.io/badge/License-Proprietary-red) ![Static Badge](https://img.shields.io/badge/Python-3.9%2B-green?logo=python&logoColor=white) ![Static Badge](https://img.shields.io/badge/Version-0.1.0-blue?logo=git) [![security: bandit](https://img.shields.io/badge/Security-bandit-yellow.svg)](https://github.com/PyCQA/bandit)
 
 # Time Management System
 
